@@ -1,0 +1,81 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+
+    android:layout_height="match_parent"
+
+    android:paddingLeft="10dp"
+
+    android:paddingRight="10dp"
+
+    android:paddingTop="10dp"
+
+    android:paddingBottom="10dp" tools:context=".MainActivity">
+
+    <EditText
+
+        android:layout_width="wrap_content"
+
+        android:layout_height="wrap_content"
+
+        android:id="@+id/editText"
+
+        android:layout_alignParentTop="true"
+
+        android:layout_alignParentRight="true"
+
+        android:layout_alignParentEnd="true"
+
+        android:layout_alignParentLeft="true"
+
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:id="@+id/buttonStart"
+        android:text="Begin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editText"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:onClick="onClickStart" />
+
+    <Button
+        android:id="@+id/buttonSend"
+        android:text="Send"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editText"
+        android:layout_toRightOf="@id/buttonStart"
+        android:onClick="onClickSend" />
+
+    <Button
+        android:id="@+id/buttonStop"
+        android:text="Stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editText"
+        android:layout_toRightOf="@id/buttonSend"
+        android:onClick="onClickStop" />
+
+    <Button
+        android:id="@+id/buttonClear"
+        android:text="Clear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editText"
+        android:layout_toRightOf="@id/buttonStop"
+        android:onClick="onClickClear" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonSend"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/editText"
+        android:layout_alignEnd="@+id/editText"
+        android:layout_alignParentBottom="true" />
+
+</RelativeLayout>

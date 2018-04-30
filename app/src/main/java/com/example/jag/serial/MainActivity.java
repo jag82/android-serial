@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothClass;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PermissionInfo;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -18,6 +19,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     UsbManager usbManager;
     UsbDevice device;
     UsbDeviceConnection connection;
+    boolean usbConnected;
 
     EditText editText;
     TextView textView;
@@ -66,6 +69,45 @@ public class MainActivity extends AppCompatActivity {
         sendButton = findViewById(R.id.buttonSend);
         stopButton = findViewById(R.id.buttonStop);
         clearButton = findViewById(R.id.buttonClear);
+
+        setUiEnabled(false);
+
+        //test for usb devices
+        UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        UsbDeviceConnection connection;
+        HashMap<String, UsbDevice> deviceList = manager.getDeviceList();
+        Iterator<UsbDevice> deviceIterator = deviceList.values().iterator();
+        UsbDevice device = null;
+        while(deviceIterator.hasNext()){
+            device = deviceIterator.next();
+            String s = device.getDeviceName();
+            int pid = device.getProductId();
+            int did = device.getDeviceId();
+            int vid = device.getVendorId();
+            textView.setText(s+"\n"+Integer.toString(pid)+"\n"+Integer.toString(did));
+        }
+        connection = manager.openDevice(device);
+        Toast.makeText(this, "end of onCreate approaching...", Toast.LENGTH_SHORT).show();
+
+        // listen for new devices
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        registerReceiver(broadcastReceiver, filter);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        Intent intent = getIntent();
+        Log.d(TAG, "intent: " + intent);
+        String action = intent.getAction();
+
+
+        if (usbConnected==false ) {
+            Toast.makeText(this, "checking for usb!", Toast.LENGTH_SHORT).show();
+            //check to see if USB is now connected
+        }
     }
 
     public void setUiEnabled(boolean value) {
@@ -78,6 +120,8 @@ public class MainActivity extends AppCompatActivity {
 
         HashMap usbDevices = usbManager.getDeviceList();
         if (!usbDevices.isEmpty()) {
+            Toast.makeText(this, "usb devices: " + usbDevices.size(), Toast.LENGTH_SHORT).show();
+
             boolean keep = true;
 
             HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
@@ -105,16 +149,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClickSend(View view) {
-        String string = editText.getText().toString();
-        serialPort.write(string.getBytes());
+        if(serialPort == null) {
+            Toast.makeText(this, "serialPort undefined", Toast.LENGTH_SHORT).show();
+        } else {
+            String string = editText.getText().toString();
+            serialPort.write(string.getBytes());
+        }
     }
 
     public void onClickStop(View view) {
-        serialPort.close();
+        if(serialPort == null) {
+            Toast.makeText(this, "serialPort undefined", Toast.LENGTH_SHORT).show();
+        } else {
+            serialPort.close();
+        }
     }
 
     public void onClickClear(View view) {
-
+        editText.setText("");
+        textView.setText("");
     }
 
 
@@ -122,9 +175,10 @@ public class MainActivity extends AppCompatActivity {
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() { //Broadcast Receiver to automatically start and stop the Serial connection.
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ACTION_USB_PERMISSION)) {
-                boolean granted =
-                        intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
+            String action = intent.getAction();
+            if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+                usbConnected=false;
+                boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
                 if (granted) {
                     connection = usbManager.openDevice(device);
                     serialPort = UsbSerialDevice.createUsbSerialDevice(device, connection);
@@ -138,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
                             serialPort.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
                             serialPort.read(mCallback); //
                             tvAppend(textView, "Serial Connection Opened!\n");
+                            usbConnected = true;
 
                         } else {
                             Log.d("SERIAL", "PORT NOT OPEN");
